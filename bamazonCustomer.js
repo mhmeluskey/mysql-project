@@ -19,10 +19,10 @@ con.connect(function (err) {
     con.query("SELECT id, product_name FROM products", function (err, res) {
         if (err) throw err;
         console.log(res);
-           shopping();
-   
-        
-     
+        shopping();
+
+
+
     });
 
     //});
@@ -43,27 +43,50 @@ function shopping() {
             message: 'How many would you like to buy?'
         }])
         .then(function (user) {
-            console.log( typeof user.ids  );
+            console.log(typeof user.ids);
             console.log(user.answer);
 
             var query = "SELECT stock_quantity FROM products WHERE ?";
-            con.query(query, {id: parseInt(user.ids)}, function(err, res) {
-            console.log(res);
+            con.query(query, { id: parseInt(user.ids) }, function (err, res) {
+                console.log(res);
 
-            var stock = JSON.parse(res, function(k, v) { 
-                return (typeof v === "object") ; 
-            });
 
-            console.log(stock);
-           
-            var quantity  = parseInt(user.answer)
-            console.log(quantity);
-            // var stock = parseInt(res.stock_quantity);
-            // console.log(stock); 
-            
+
+                var quantity = parseInt(user.answer)
+                console.log(quantity);
+                var stock = parseInt(res[0].stock_quantity);
+                console.log(stock);
+
+                if (quantity <= stock) {
+                    console.log("There is enough inventory!");
+                    var newStock = stock - quantity;
+
+                    console.log("New inventory: " + newStock);
+                    con.query("UPDATE products SET ?", 
+                    [{
+                        stock_quantity: newStock,
+
+                        
+                    }], function (err, res) {
+
+                        console.log("this is new stock: " + newStock);
+                        console.log(res);
+
+                    })
+
+                }
+
+
+
+                else {
+                    console.log("Not enough product to complete this order")
+                }
             })
-           
-        })
-    
-    
-    }
+        });
+
+
+
+
+
+
+}
